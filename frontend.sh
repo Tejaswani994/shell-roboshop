@@ -1,5 +1,5 @@
 #!/bin/bash
-START_TIME=$(date +%s)
+
 USERID=$(id -u)
 R="\e[31m"
 G="\e[32m"
@@ -13,6 +13,7 @@ SCRIPT_DIR=$PWD
 mkdir -p $LOGS_FOLDER
 echo "Script started executing at: $(date)" | tee -a $LOG_FILE
 
+# check the user has root priveleges or not
 if [ $USERID -ne 0 ]
 then
     echo -e "$R ERROR:: Please run this script with root access $N" | tee -a $LOG_FILE
@@ -32,44 +33,34 @@ VALIDATE(){
     fi
 }
 
+dnf module disable nginx -y &>>$LOG_FILE
+VALIDATE $? "Disabling Default Nginx"
 
-dnf module disable nginx -y
-VALIDATE $? "Nginx module disable"
-dnf module enable nginx:1.24 -y
-VALIDATE $? "Nginx module enable"
-dnf install nginx -y
-VALIDATE $? "Nginx installation"
+dnf module enable nginx:1.24 -y &>>$LOG_FILE
+VALIDATE $? "Enabling Nginx:1.24"
 
-systemctl enable nginx
-VALIDATE $? "Enabling nginx"
-systemctl start nginx
-VALIDATE $? "Starting nginx"
+dnf install nginx -y &>>$LOG_FILE
+VALIDATE $? "Installing Nginx"
 
+systemctl enable nginx  &>>$LOG_FILE
+systemctl start nginx 
+VALIDATE $? "Starting Nginx"
 
+rm -rf /usr/share/nginx/html/* &>>$LOG_FILE
+VALIDATE $? "Removing default content"
 
-rm -rf /usr/share/nginx/html/*
-VALIDATE $? "Cleaning nginx html directory" 
+curl -o /tmp/frontend.zip https://roboshop-artifacts.s3.amazonaws.com/frontend-v3.zip &>>$LOG_FILE
+VALIDATE $? "Downloading frontend"
 
+cd /usr/share/nginx/html 
+unzip /tmp/frontend.zip &>>$LOG_FILE
+VALIDATE $? "unzipping frontend"
 
-curl -o /tmp/frontend.zip https://roboshop-artifacts.s3.amazonaws.com/frontend-v3.zip
-VALIDATE $? "Downloading frontend code"
-
-
-
-cd /usr/share/nginx/html
-unzip /tmp/frontend.zip
-VALIDATE $? "Extracting frontend code"
-
-rm -rf /etc/nginx/nginx.conf
-VALIDATE $? "Removing default nginx config file"
+rm -rf /etc/nginx/nginx.conf &>>$LOG_FILE
+VALIDATE $? "Remove default nginx conf"
 
 cp $SCRIPT_DIR/nginx.conf /etc/nginx/nginx.conf
-VALIDATE $? "copying nginx config file"
+VALIDATE $? "Copying nginx.conf"
 
-systemctl restart nginx
+systemctl restart nginx 
 VALIDATE $? "Restarting nginx"
-
-
-END_TIME=$(date +%s)
-TOTAL_TIME=$((END_TIME - START_TIME))
-echo "Script execution time: $TOTAL_TIME seconds" | tee -a $LOG_FILE
