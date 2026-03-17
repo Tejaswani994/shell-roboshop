@@ -1,9 +1,9 @@
 #!/bin/bash
 
 AMI_ID="ami-0220d79f3f480ecf5"
-SG_ID="sg-000daeb6164e0b722" # replace with your SG ID
+SG_ID="sg-0649e7f9dd7766852" # replace with your SG ID
 INSTANCES=("mongodb" "redis" "mysql" "rabbitmq" "catalogue" "user" "cart" "shipping" "payment" "dispatch" "frontend")
-ZONE_ID="Z07092733994604BL6YUV" # replace with your domain hosted zone ID
+ZONE_ID="Z01060042I8IKR9UI6ZLC" # replace with your domain hosted zone ID
 DOMAIN_NAME="tejaswini.site" # replace with your domain
 
 #for instance in ${INSTANCES[@]}
