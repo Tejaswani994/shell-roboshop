@@ -9,7 +9,6 @@ DOMAIN_NAME="tejaswini.site" # replace with your domain
 #for instance in ${INSTANCES[@]}
 for instance in $@
 do
-AMI_ID="ami-0220d79f3f480ecf5"
     INSTANCE_ID=$(aws ec2 run-instances --image-id ami-0220d79f3f480ecf5 --instance-type t3.micro --security-group-ids sg-0649e7f9dd7766852 --tag-specifications "ResourceType=instance,Tags=[{Key=Name, Value=$instance}]" --query "Instances[0].InstanceId" --output text)
     if [ $instance != "frontend" ]
     then
